@@ -1,0 +1,108 @@
+{
+  "name": "Genomic and Proteomic Research Librarian",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "query",
+              "value": "accelerating genomic OR proteomic data analysis personalized medicine"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Search Query",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://ieeexploreapi.ieee.org/api/v1/search/articles",
+        "method": "GET",
+        "queryParametersUi": {
+          "parameter": [
+            { "name": "apikey", "value": "={{ $env.IEEE_API_KEY }}" },
+            { "name": "querytext", "value": "={{ $json.query }}" },
+            { "name": "format", "value": "json" },
+            { "name": "sort_order", "value": "desc" },
+            { "name": "sort_field", "value": "relevance" },
+            { "name": "max_records", "value": "20" }
+          ]
+        }
+      },
+      "name": "Search IEEE Xplore",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            { "value1": "={{ $json.title }}", "operation": "contains", "value2": "genom" },
+            { "value1": "={{ $json.abstract }}", "operation": "contains", "value2": "genom" },
+            { "value1": "={{ $json.title }}", "operation": "contains", "value2": "proteom" },
+            { "value1": "={{ $json.abstract }}", "operation": "contains", "value2": "proteom" }
+          ]
+        }
+      },
+      "name": "Filter Genomics/Proteomics",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            { "name": "title", "value": "={{ $json.title }}" },
+            { "name": "authors", "value": "={{ $json.authors }}" },
+            { "name": "doi", "value": "={{ $json.doi }}" },
+            { "name": "url", "value": "={{ $json.pdf_url }}" }
+          ]
+        }
+      },
+      "name": "Simplify Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1110, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [ { "node": "Set Search Query", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Set Search Query": {
+      "main": [
+        [ { "node": "Search IEEE Xplore", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Search IEEE Xplore": {
+      "main": [
+        [ { "node": "Filter Genomics/Proteomics", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Filter Genomics/Proteomics": {
+      "main": [
+        [ { "node": "Simplify Output", "type": "main", "index": 0 } ],
+        [ ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}
