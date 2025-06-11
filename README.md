@@ -1,4 +1,4 @@
-# bar
+# Bioinformatics Acceleration Researcher (BAR)
 
 This repository contains an n8n workflow for researching articles on accelerating genomic and proteomic data analysis for personalized medicine. The workflow queries the IEEE Xplore API and filters results to prioritize publications that make heavy use of genetic or proteomic data.
 
